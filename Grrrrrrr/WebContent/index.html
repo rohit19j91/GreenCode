@@ -3,7 +3,7 @@
 <head>
 <link href="css/bootstrap.css" rel="stylesheet">
 <style>
-#Image {
+#Images {
     position: relative;
     margin: 80px auto 0;
     width: 900px;
@@ -12,7 +12,7 @@
 }
 
 body{
-background-color: black;
+background-color: grey;
 }
 #testimage {
     display: block;
@@ -56,23 +56,25 @@ hr {
 
 </style>
 </head>
-<body onload=total();>
-<div id="Image" >
-    <img class="Image" src="json/image.js" alt="TestImage">
-	<img class="Image" src="images/2.jpg">
+<body>
+<div id="Images" >
+    <img id="Image" alt="TestImage" src="images/1.jpg">
+	<!--  <img class="Image" src="images/2.jpg">
 	<img class="Image" src="images/3.jpg">  
-	<img class="Image" src="images/4.jpg">
- <button id="ButtonLeft" type="button" class="btn btn-default btn-lg" onclick="plusDivs(-1)">
+	<img class="Image" src="images/4.jpg">-->
+ <button id="ButtonLeft" type="button" class="btn btn-default btn-lg" onclick="leftclickload()">
   <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
 </button>
-<button id="ButtonRight" type="button" class="btn btn-default btn-lg" onclick="plusDivs(1)">
+<button id="ButtonRight" type="button" class="btn btn-default btn-lg" onclick="rightclickload()">
   <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
 </button>
 </div>
 <hr width="890">
 <div id="Totalimage" style="margin-left: 240px;">
-<div id="totalimg"></div>
-<div id="currentimg"></div>
+
+<span id="currentimg"></span>
+<span>/</span>
+<span id="totalimg"></span>
 <div style="margin-left: 800px;">
 <span class="dot" onclick="currentDiv(1)"></span>
 <span class="dot" onclick="currentDiv(2)"></span>
@@ -80,45 +82,74 @@ hr {
 <span class="dot" onclick="currentDiv(4)"></span>
 </div>
 </div>
-
+<script type="text/javascript" src="json/image.jsonp"></script>
 <script>
-var slideIndex = 1;
-var totalimg=0;
-showDivs(slideIndex);
 
-function total()
-{
-	var img=document.getElementsByClassName("Image");
-	while(totalimg!=img.length)
-		{
-		totalimg++;
-		}
-	document.getElementById("totalimg").innerHTML=totalimg;
-	document.getElementById("currentimg").innerHTML=y;
-	}
-function plusDivs(n) {
-  showDivs(slideIndex += n);
-}
+var left=0;
+var check=0;
+var right=0;
 
 function currentDiv(n) {
-  showDivs(slideIndex = n);
+  left=n-1;
+  right=n-1;
+  bubbleclick();
 }
 
+function loadJSON(file, callback) {   
 
-function showDivs(n) {
-  var i;
-  var x = document.getElementsByClassName("Image");
-  var dots = document.getElementsByClassName("dot");
-  if (n > x.length) {slideIndex = 1}    
-  if (n < 1) {slideIndex = x.length}
-  for (i = 0; i < x.length; i++) {
-     x[i].style.display = "none";  
-  }
-  for (i = 0; i < dots.length; i++) {
-     dots[i].className = dots[i].className.replace(" dotselected", "");
-  }
-  x[slideIndex-1].style.display = "block";  
-  dots[slideIndex-1].className += " dotselected";
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType("application/json");
+    xobj.open('GET', file, true); // Replace 'my_data' with the path to your file
+    xobj.onreadystatechange = function () {
+          if (xobj.readyState == 4 && xobj.status == "200") {
+            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+            callback(xobj.responseText);
+          }
+    };
+    xobj.send(null);  
+ }
+
+function bubbleclick() {
+    loadJSON("json/image.jsonp", function(response) {
+        var actual_JSON = JSON.parse(response);
+        console.log(actual_JSON);
+        document.getElementById("Image").src=actual_JSON[left].url;
+        document.getElementById("currentimg").innerHTML=actual_JSON[left].id;
+        document.getElementById("totalimg").innerHTML=actual_JSON.length;
+        console.log(actual_JSON[left].url);            
+    });    
+}
+
+function leftclickload() {
+    loadJSON("json/image.jsonp", function(response) {
+        var actual_JSON = JSON.parse(response);
+        if (left==-1){
+			left=actual_JSON.length-1
+			check++;
+		}	
+        console.log(actual_JSON);
+        document.getElementById("Image").src=actual_JSON[left].url;
+        document.getElementById("currentimg").innerHTML=actual_JSON[left].id;
+        document.getElementById("totalimg").innerHTML=actual_JSON.length;
+        console.log(actual_JSON[left].url);
+        if(left<=actual_JSON.length){
+    		left--;}
+    });    
+}
+function rightclickload() {
+    loadJSON("json/image.jsonp", function(response) {
+        var actual_JSON = JSON.parse(response);
+        if (right>=actual_JSON.length){
+			right=0
+		}
+        console.log(actual_JSON);
+        document.getElementById("Image").src=actual_JSON[right].url;
+        document.getElementById("currentimg").innerHTML=actual_JSON[right].id;
+        document.getElementById("totalimg").innerHTML=actual_JSON.length;
+        console.log(actual_JSON[right].url);
+        if(right<actual_JSON.length){
+    		right++;}         
+    });    
 }
 </script>
 </body>
